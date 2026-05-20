@@ -79,6 +79,11 @@ class MileBridgeApp extends StatelessWidget {
         '/support': (context) => const EmotionalSupportScreen(),
         
         '/modes': (context) => const LocationModesScreen(),
+
+        // FIXED: Gidugang kini nga mga rota aron dili na mo-crash kung i-tap ang mga menu cards
+        '/alphabet': (context) => const LearnMenuScreen(), // Ilisi ni og AlphabetScreen() puhon
+        '/words': (context) => const LearnMenuScreen(),    // Ilisi ni og WordsScreen() puhon
+        '/phrases': (context) => const LearnMenuScreen(),  // Ilisi ni og PhrasesScreen() puhon
       },
     );
   }

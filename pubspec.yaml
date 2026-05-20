@@ -1,24 +1,41 @@
 name: milebrdge_app
+
 description: MileBridge AI - Giving voice to silence.
+
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  
-  # Corrected indentation for all dependencies below
-  camera: ^0.11.4
-  camera_windows: ^0.2.1+9
+
+  # CAMERA
+  camera: ^0.11.0+2
+
+  # STORAGE
+  path_provider: ^2.1.2
+
+  # PERMISSIONS
+  permission_handler: ^11.3.1
+
+  # GOOGLE ML KIT
+  google_mlkit_pose_detection: ^0.13.0
+
+  # TEXT TO SPEECH
+  flutter_tts: ^4.0.2
+
+  # UI
   cupertino_icons: ^1.0.6
   google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^3.0.0
 
 flutter:

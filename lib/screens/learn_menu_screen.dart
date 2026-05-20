@@ -19,6 +19,7 @@ class LearnMenuScreen extends StatelessWidget {
           _buildMenuCard(context, "Common Words", Icons.wb_sunny_outlined, "/words"),
           _buildMenuCard(context, "Daily Phrases", Icons.record_voice_over, "/phrases"),
           const SizedBox(height: 30),
+          
           // Practice Button
           SizedBox(
             height: 60,

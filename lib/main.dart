@@ -12,6 +12,10 @@ import 'screens/messenger_bridge_screen.dart';
 import 'screens/emotional_support_screen.dart';
 import 'screens/location_modes_screen.dart';
 
+// FIXED IMPORTS: Gidugang kining duha ka bag-ong screen files aron mailhan sa app
+import 'screens/alphabet_screen.dart';
+import 'screens/words_screen.dart';
+
 void main() async {
   // 1. Ensure Flutter bindings are initialized for native tools (Camera/Storage)
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,10 +84,10 @@ class MileBridgeApp extends StatelessWidget {
         
         '/modes': (context) => const LocationModesScreen(),
 
-        // FIXED: Gidugang kini nga mga rota aron dili na mo-crash kung i-tap ang mga menu cards
-        '/alphabet': (context) => const LearnMenuScreen(), // Ilisi ni og AlphabetScreen() puhon
-        '/words': (context) => const LearnMenuScreen(),    // Ilisi ni og WordsScreen() puhon
-        '/phrases': (context) => const LearnMenuScreen(),  // Ilisi ni og PhrasesScreen() puhon
+        // FIXED ROUTES: Gi-point na nato sa saktong mga Screen Classes imbes nga mag-loop sa LearnMenuScreen
+        '/alphabet': (context) => const AlphabetScreen(), 
+        '/words': (context) => const WordsScreen(),        
+        '/phrases': (context) => const LearnMenuScreen(),  // Kani temporaryo lang una samtang wala pa tay phrases_screen
       },
     );
   }

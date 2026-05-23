@@ -10,19 +10,14 @@ class LearnMenuScreen extends StatefulWidget {
 class _LearnMenuScreenState extends State<LearnMenuScreen> {
   final TextEditingController _textController = TextEditingController();
 
-  // State variables alang sa Dynamic AI Studio Player
+  // State variables for dynamic layout tracking
   String _currentPlayingWord = "";
   String _currentGifUrl = "";
+  String _currentLocalAssetPath = ""; // Handles local A-Z image files
   bool _isPlayingSentence = false;
 
-  // Cloud Network Dictionary Engine (API Links)
+  // Cloud Dictionary Network Engine (URLs for signs)
   final Map<String, String> _signLanguageApiDeck = const {
-    // Alphabet Fallback Assets
-    "a": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE1YN7aBOFPRw8E/giphy.gif",
-    "b": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE1YN7aBOFPRw8F/giphy.gif",
-    "c": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE1YN7aBOFPRw8G/giphy.gif",
-
-    // Common Words / Phrases
     "hello": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l3q2zVr6cu95nF6O4/giphy.gif",
     "thank you": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE4bWnzGvIQL9M4/giphy.gif",
     "please": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE4bWnzGvIQL9M5/giphy.gif",
@@ -32,38 +27,44 @@ class _LearnMenuScreenState extends State<LearnMenuScreen> {
     "good morning": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6N2R6M3p0Y3BndXN6OHBqd3BndXN6OHBqd3BndXN6OHBqd3BndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3o7qE4bWnzGvIQL9M9/giphy.gif",
   };
 
-  // LOGIC ENGINE: Mo-split sa sentence ug mo-play sa GIF word-by-word
+  // Quick Action Array Lists
+  final List<String> _commonWordsList = const ["Hello", "Thank You", "Please", "Sorry", "Help", "Good Morning"];
+  final List<String> _alphabetList = const ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+  // Core Processing Method for parsing words or single character lookups
   Future<void> _playSentence(String input) async {
     if (input.trim().isEmpty) return;
 
     setState(() {
       _isPlayingSentence = true;
+      _currentLocalAssetPath = "";
+      _currentGifUrl = "";
     });
 
-    // Gitangtang ang bantas ug gi-split pinaagi sa spaces
     List<String> words = input.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').trim().split(RegExp(r'\s+'));
 
     for (String word in words) {
       if (!mounted) return;
 
+      // Rule 1: Check if it's a full network word
       if (_signLanguageApiDeck.containsKey(word)) {
         setState(() {
+          _currentLocalAssetPath = "";
           _currentPlayingWord = word.toUpperCase();
           _currentGifUrl = _signLanguageApiDeck[word]!;
         });
-        // I-play ang tibuok pulong sulod sa 3 ka segundo
         await Future.delayed(const Duration(seconds: 3));
-      } else {
-        // Kon wala ang tibuok pulong sa diksyonaryo, i-spelling kini gamit ang A-Z letters
+      } 
+      // Rule 2: Fallback to spelling it out letter-by-letter with your local A-Z PNG files
+      else {
         for (int i = 0; i < word.length; i++) {
           String letter = word[i];
-          if (_signLanguageApiDeck.containsKey(letter)) {
-            setState(() {
-              _currentPlayingWord = "${word.toUpperCase()} (${letter.toUpperCase()})";
-              _currentGifUrl = _signLanguageApiDeck[letter]!;
-            });
-            await Future.delayed(const Duration(milliseconds: 1300));
-          }
+          setState(() {
+            _currentGifUrl = "";
+            _currentPlayingWord = "${word.toUpperCase()} (${letter.toUpperCase()})";
+            _currentLocalAssetPath = "assets/alphabet/$letter.png";
+          });
+          await Future.delayed(const Duration(milliseconds: 1300));
         }
       }
     }
@@ -71,6 +72,23 @@ class _LearnMenuScreenState extends State<LearnMenuScreen> {
     setState(() {
       _isPlayingSentence = false;
       _currentPlayingWord = "DONE DEMONSTRATING";
+    });
+  }
+
+  // Directly sets up visual context when selecting chips instantly
+  void _triggerDirectAsset(String target, {bool isAlphabet = false}) {
+    if (_isPlayingSentence) return;
+    
+    setState(() {
+      if (isAlphabet) {
+        _currentGifUrl = "";
+        _currentPlayingWord = "LETTER $target";
+        _currentLocalAssetPath = "assets/alphabet/${target.toLowerCase()}.png";
+      } else {
+        _currentLocalAssetPath = "";
+        _currentPlayingWord = target.toUpperCase();
+        _currentGifUrl = _signLanguageApiDeck[target.toLowerCase()] ?? "";
+      }
     });
   }
 
@@ -83,192 +101,229 @@ class _LearnMenuScreenState extends State<LearnMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F6F8), // Imong light teal background
+      backgroundColor: const Color(0xFFF4F7F6), // Smooth off-white/light gray canvas matching mockup
       appBar: AppBar(
         title: const Text(
-          "Learn Sign Language",
+          "Smart Sign Studio",
           style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.teal.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: Column(
         children: [
-          // 1. DYNAMIC AI STUDIO DISPLAY COMPONENT (Kini katong naay image prototype logo)
-          Container(
-            height: 250,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                ),
-              ],
-              border: Border.all(color: Colors.teal.shade100, width: 1.5),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
               children: [
-                if (_currentGifUrl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: Image.network(
-                      _currentGifUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const CircularProgressIndicator(color: Colors.teal);
-                      },
-                    ),
-                  )
-                else
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.smart_toy_outlined, size: 55, color: Colors.teal.shade300),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "AI Sign Studio Ready",
-                        style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Color(0xFF2C3E50), fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        "Type a custom sentence below to view tracking.",
-                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                // 1. CLEAN HIGHER-FIDELITY STUDIO CARD
+                Container(
+                  height: 340,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBE5E7), // Beautiful backdrop green-blue bounding wrap
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF90C2C5), // Inner profile frame tint color matching image
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // RENDERING SYSTEM LOOKUPS BASED ON ACTIVE PAYLOAD
+                        if (_currentGifUrl.isNotEmpty)
+                          Image.network(_currentGifUrl, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
+                        else if (_currentLocalAssetPath.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Image.asset(_currentLocalAssetPath, fit: BoxFit.contain),
+                          )
+                        else
+                          // Empty/Idle Placeholder: Showing our friendly AI Sign companion icon
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.face_retouching_natural_rounded, size: 80, color: Colors.teal.shade800),
+                              const SizedBox(height: 12),
+                              Text(
+                                "Studio Engine Live",
+                                style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.teal.shade900, fontSize: 18),
+                              ),
+                            ],
+                          ),
 
-                // DYNAMIC SUBTITLE RIBBON BAND
-                if (_currentPlayingWord.isNotEmpty)
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _currentPlayingWord,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
+                        // IMMERSIVE DESIGN HUD TEXT BANNER OVER VIDEO INTERFACE
+                        if (_currentPlayingWord.isNotEmpty)
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: Text(
+                                "'$_currentPlayingWord'",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // 2. TEXT FIELD ENTRY FIELD BLOCK
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "TYPE YOUR SENTENCE",
+                    style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 11, letterSpacing: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _textController,
+                        enabled: !_isPlayingSentence,
+                        decoration: InputDecoration(
+                          hintText: "e.g., Hello please sorry",
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
+                          ),
                         ),
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      height: 54,
+                      width: 56,
+                      child: ElevatedButton(
+                        onPressed: _isPlayingSentence ? null : () => _playSentence(_textController.text),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade700,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: const Icon(Icons.play_arrow_rounded, size: 32),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // 3. HORIZONTAL CHIP SYSTEM LIBRARIES (Alphabet Collection)
+                const Text(
+                  "TAP QUICK ALPHABET A-Z",
+                  style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 11, letterSpacing: 0.5),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 40,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _alphabetList.length,
+                    itemBuilder: (context, index) {
+                      final item = _alphabetList[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(item, style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.teal.shade900)),
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.teal.shade200),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          onPressed: () => _triggerDirectAsset(item, isAlphabet: true),
+                        ),
+                      );
+                    },
                   ),
+                ),
+                const SizedBox(height: 20),
+
+                // 4. HORIZONTAL CHIP SYSTEM LIBRARIES (Common Expressions Collection)
+                const Text(
+                  "OR TAP QUICK COMMON WORDS",
+                  style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 11, letterSpacing: 0.5),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 40,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _commonWordsList.length,
+                    itemBuilder: (context, index) {
+                      final item = _commonWordsList[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(item, style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, color: Colors.black87)), // fixed here!
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          onPressed: () => _triggerDirectAsset(item, isAlphabet: false),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 15),
-
-          // 2. SMART TEXT INPUT FIELD FOR GENERATION
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _textController,
-                  enabled: !_isPlayingSentence,
-                  style: const TextStyle(fontFamily: 'Montserrat', fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: "Type sentence (e.g., hello please a)",
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 48,
-                width: 52,
-                child: ElevatedButton(
-                  onPressed: _isPlayingSentence ? null : () => _playSentence(_textController.text),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: _isPlayingSentence
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.play_arrow_rounded, size: 26),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 25),
-
-          // 3. SEPARATOR HEADER
-          const Text(
-            "LEARN LIBRARIES",
-            style: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 11, letterSpacing: 1),
-          ),
-          const SizedBox(height: 10),
-
-          // 4. IMONG KASAMTANGANG MENU CARDS
-          _buildMenuCard(context, "Alphabet A-Z", Icons.abc, "/alphabet"),
-          _buildMenuCard(context, "Common Words", Icons.wb_sunny_outlined, "/words"),
-          _buildMenuCard(context, "Daily Phrases", Icons.record_voice_over, "/phrases"),
           
-          const SizedBox(height: 20),
-
-          // 5. IMONG PRACTICE MODE FLOATING ACTION BUTTON
-          SizedBox(
-            height: 55,
-            child: ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/translator'),
-              icon: const Icon(Icons.videocam),
-              label: const Text(
-                "PRACTICE MODE",
-                style: TextStyle(fontFamily: 'Montserrat', fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal.shade700,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                elevation: 2,
+          // NATIVE FLOATING BOTTOM NAVIGATION STRIP FOR CALL TO ACTION
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/translator'),
+                icon: const Icon(Icons.videocam_rounded),
+                label: const Text(
+                  "LAUNCH PRACTICE CAM",
+                  style: TextStyle(fontFamily: 'Montserrat', fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal.shade800,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 1,
+                ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMenuCard(BuildContext context, String title, IconData icon, String route) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 0.5,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        leading: CircleAvatar(
-          backgroundColor: Colors.teal.shade50,
-          child: Icon(icon, color: Colors.teal),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF2C3E50)),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black38),
-        onTap: () => Navigator.pushNamed(context, route),
       ),
     );
   }
